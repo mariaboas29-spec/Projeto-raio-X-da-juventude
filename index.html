@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raio-X da Juventude — Análise de Condições de Vida & Métricas</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            blue: '#3b82f6',
+                            purple: '#8b5cf6',
+                            emerald: '#10b981',
+                            dark: '#0f172a',
+                            card: '#1e293b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f1f5f9;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #34d399 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gradient-border {
+            position: relative;
+            border-radius: 1rem;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+            padding: 1px;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        code, pre {
+            font-family: 'JetBrains Mono', monospace;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-purple selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-purple-600 to-emerald-400 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-purple-500/20">
+                    <i class="fa-solid fa-chart-radar"></i>
+                </div>
+                <div>
+                    <span class="font-extrabold text-lg tracking-tight gradient-text">Raio-X da Juventude</span>
+                    <span class="hidden sm:inline-block text-xs text-slate-400 ml-2 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700">v1.0 • Observatório Social</span>
+                </div>
+            </div>
+
+            <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
+                <a href="#kpi-overview" class="hover:text-blue-400 transition-colors">Visão Geral</a>
+                <a href="#diagnostics" class="hover:text-blue-400 transition-colors">Gráficos & Dados</a>
+                <a href="#survey-form" class="hover:text-blue-400 transition-colors">Questionário</a>
+                <a href="#python-code" class="hover:text-blue-400 transition-colors">Código Colab</a>
+                <a href="#proposals" class="hover:text-blue-400 transition-colors">Pilares Estratégicos</a>
+            </nav>
+
+            <a href="#survey-form" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl transition-all shadow-md shadow-purple-900/30 flex items-center gap-2">
+                <i class="fa-solid fa-square-plus"></i>
+                <span>Responder Pesquisa</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- Hero Section -->
+        <section class="text-center py-8 sm:py-12 relative overflow-hidden">
+            <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -top-12 left-1/3 w-64 h-64 bg-blue-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700 text-xs text-purple-300 mb-6 font-medium">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Diagnóstico Socioeconômico e Educacional Unificado
+            </div>
+
+            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-100 max-w-4xl mx-auto leading-tight">
+                Mapeando as condições de vida e o <span class="gradient-text">futuro da juventude</span>
+            </h1>
+
+            <p class="mt-4 text-base sm:text-lg text-slate-400 max-w-2xl mx-auto font-normal">
+                Análise de dados primários e secundários para embasar políticas públicas, estratégias pedagógicas e ações sociais focadas em equidade educacional.
+            </p>
+
+            <!-- Tech Badges -->
+            <div class="mt-8 flex flex-wrap justify-center items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+                <span class="px-3 py-1.5 rounded-lg bg-slate-800/90 text-slate-300 border border-slate-700/80 flex items-center gap-2">
+                    <i class="fa-brands fa-python text-amber-400"></i> Python 3.10+
+                </span>
+                <span class="px-3 py-1.5 rounded-lg bg-slate-800/90 text-slate-300 border border-slate-700/80 flex items-center gap-2">
+                    <i class="fa-solid fa-table text-blue-400"></i> Pandas & NumPy
+                </span>
+                <span class="px-3 py-1.5 rounded-lg bg-slate-800/90 text-slate-300 border border-slate-700/80 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-emerald-400"></i> Plotly / Chart.js
+                </span>
+                <span class="px-3 py-1.5 rounded-lg bg-slate-800/90 text-slate-300 border border-slate-700/80 flex items-center gap-2">
+                    <i class="fa-brands fa-github text-slate-100"></i> GitHub Pages
+                </span>
+            </div>
+        </section>
+
+        <!-- Section 2: Key Metrics (KPIs) -->
+        <section id="kpi-overview" class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-purple-400"></i> Métricas em Tempo Real
+                    </h2>
+                    <p class="text-xs text-slate-400">Dados agregados consolidados da amostra da pesquisa</p>
+                </div>
+                <span id="last-update" class="text-xs text-slate-400 bg-slate-800/60 px-3 py-1 rounded-full border border-slate-700">
+                    Atualizado agora
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- KPI 1 -->
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden transition-all duration-300 hover:-translate-y-1">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Jovens Entrevistados</p>
+                            <h3 id="kpi-total" class="text-3xl font-extrabold text-white mt-1">1.250</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center text-xs text-emerald-400 gap-1 font-medium">
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+                        <span>+12% este mês</span>
+                        <span class="text-slate-500 ml-auto">Amostra ativa</span>
+                    </div>
+                </div>
+
+                <!-- KPI 2 -->
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden transition-all duration-300 hover:-translate-y-1">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Vulnerabilidade Digital</p>
+                            <h3 id="kpi-internet" class="text-3xl font-extrabold text-amber-400 mt-1">38.4%</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-wifi"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center text-xs text-slate-400 gap-1 font-medium">
+                        <span>Apenas 3G/4G limitado ou sem net</span>
+                    </div>
+                </div>
+
+                <!-- KPI 3 -->
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden transition-all duration-300 hover:-translate-y-1">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Média Estudo Extraclasse</p>
+                            <h3 id="kpi-study" class="text-3xl font-extrabold text-blue-400 mt-1">4.2h<span class="text-sm font-normal text-slate-400">/sem</span></h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-book-open"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center text-xs text-slate-400 gap-1 font-medium">
+                        <span>Meta sugerida: 8.0h/semana</span>
+                    </div>
+                </div>
+
+                <!-- KPI 4 -->
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden transition-all duration-300 hover:-translate-y-1">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Índice de Bem-Estar</p>
+                            <h3 id="kpi-wellbeing" class="text-3xl font-extrabold text-purple-400 mt-1">2.8<span class="text-sm font-normal text-slate-400">/5.0</span></h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-heart-pulse"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center text-xs text-rose-400 gap-1 font-medium">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span>Nível moderado-crítico</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Interactive Visualizations -->
+        <section id="diagnostics" class="space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-simple text-blue-400"></i> Painel Analítico & Correlações
+                    </h2>
+                    <p class="text-xs text-slate-400">Cruzamentos socioeconômicos e educacionais obtidos com análises em Pandas/Plotly</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="resetData()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 border border-slate-700 flex items-center gap-1.5 transition-colors">
+                        <i class="fa-solid fa-rotate-left"></i> Restaurar Amostra Original
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Chart 1: Internet Access Distribution -->
+                <div class="glass-card p-5 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-sm font-bold text-slate-200">Acesso à Internet em Casa</h3>
+                            <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">Infraestrutura</span>
+                        </div>
+                        <div class="relative h-60 w-full flex items-center justify-center">
+                            <canvas id="internetChart"></canvas>
+                        </div>
+                    </div>
+                    <p class="mt-4 text-xs text-slate-400 bg-slate-900/50 p-3 rounded-xl border border-slate-800/80">
+                        <strong class="text-slate-300">Achado:</strong> Apenas 61.6% dos estudantes possuem banda larga fixa com Wi-Fi ilimitado em suas residências.
+                    </p>
+                </div>
+
+                <!-- Chart 2: Study Hours vs Income -->
+                <div class="glass-card p-5 rounded-2xl flex flex-col justify-between lg:col-span-2">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-sm font-bold text-slate-200">Horas de Estudo Semanais por Faixa de Renda Familiar</h3>
+                            <span class="text-[10px] text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Desigualdade</span>
+                        </div>
+                        <div class="relative h-60 w-full">
+                            <canvas id="studyIncomeChart"></canvas>
+                        </div>
+                    </div>
+                    <p class="mt-4 text-xs text-slate-400 bg-slate-900/50 p-3 rounded-xl border border-slate-800/80">
+                        <strong class="text-slate-300">Correlação:</strong> Jovens de renda até 1 Salário Mínimo dedicam 52% menos horas aos estudos fora da escola devido à necessidade de trabalho precoce e longos deslocamentos.
+                    </p>
+                </div>
+
+                <!-- Chart 3: Quality of Life & Wellbeing Radar/Bar -->
+                <div class="glass-card p-5 rounded-2xl flex flex-col justify-between lg:col-span-3">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-sm font-bold text-slate-200">Avaliação Multidimensional da Qualidade de Vida (Escala 1 a 5)</h3>
+                            <span class="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Socioemocional</span>
+                        </div>
+                        <div class="relative h-64 w-full">
+                            <canvas id="wellbeingChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-400">
+                        <div class="bg-slate-900/50 p-2.5 rounded-xl border border-slate-800">
+                            <span class="text-slate-300 font-semibold block mb-0.5">Deslocamento Urbano</span>
+                            Média de 1h45min gastos diariamente em transporte público.
+                        </div>
+                        <div class="bg-slate-900/50 p-2.5 rounded-xl border border-slate-800">
+                            <span class="text-slate-300 font-semibold block mb-0.5">Saúde Mental</span>
+                            Pior nota entre jovens do 3º ano do Ensino Médio em preparação para vestibular.
+                        </div>
+                        <div class="bg-slate-900/50 p-2.5 rounded-xl border border-slate-800">
+                            <span class="text-slate-300 font-semibold block mb-0.5">Perspectiva de Futuro</span>
+                            74% demonstram otimismo em evoluir na carreira através da educação técnica.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Interactive Survey Form (Simulation) -->
+        <section id="survey-form" class="space-y-4">
+            <div class="glass-card p-6 sm:p-8 rounded-3xl border-purple-500/20 relative">
+                <div class="max-w-3xl">
+                    <h2 class="text-2xl font-black text-white flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-question text-purple-400"></i> Coleta Primária: Simule sua Resposta
+                    </h2>
+                    <p class="text-slate-400 text-xs sm:text-sm mt-1">
+                        Submeta seus dados de teste para ver as métricas e os gráficos do dashboard recalculando em tempo real no navegador.
+                    </p>
+                </div>
+
+                <form id="interactiveSurvey" onsubmit="handleSurveySubmit(event)" class="mt-8 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                        <!-- Eixo 1: Socioeconômico -->
+                        <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 space-y-4">
+                            <div class="flex items-center gap-2 text-blue-400 font-bold text-sm">
+                                <span class="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-xs">1</span>
+                                Eixo Socioeconômico
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-2">Renda Familiar Mensal</label>
+                                <select id="formRenda" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                    <option value="ate1">Até 1 Salário Mínimo</option>
+                                    <option value="1a3" selected>Entre 1 e 3 Salários Mínimos</option>
+                                    <option value="mais3">Mais de 3 Salários Mínimos</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-2">Acesso à Internet</label>
+                                <select id="formInternet" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                    <option value="wifi">Banda Larga Wi-Fi em Casa</option>
+                                    <option value="mobile">Apenas Dados Móveis (3G/4G)</option>
+                                    <option value="none">Sem acesso / Acesso precário</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Eixo 2: Educacional -->
+                        <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 space-y-4">
+                            <div class="flex items-center gap-2 text-purple-400 font-bold text-sm">
+                                <span class="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-xs">2</span>
+                                Eixo Educacional
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-2">Rede de Ensino</label>
+                                <select id="formRede" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+                                    <option value="publica" selected>Pública Estadual/Municipal</option>
+                                    <option value="bolsista">Privada (Bolsista Integral)</option>
+                                    <option value="privada">Privada (Particular)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-2">Horas de Estudo Fora da Aula / Sem</label>
+                                <input type="number" id="formHoras" min="0" max="40" value="5" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+                            </div>
+                        </div>
+
+                        <!-- Eixo 3: Qualidade de Vida -->
+                        <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 space-y-4">
+                            <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                                <span class="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs">3</span>
+                                Eixo Qualidade de Vida
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-2">Nível de Saúde Mental (1 a 5)</label>
+                                <input type="range" id="formMental" min="1" max="5" value="3" class="w-full accent-emerald-500 cursor-pointer" oninput="document.getElementById('mentalVal').innerText = this.value">
+                                <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                                    <span>1 (Muito Ruim)</span>
+                                    <span id="mentalVal" class="text-emerald-400 font-bold">3</span>
+                                    <span>5 (Excelente)</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-2">Tempo Diário de Deslocamento</label>
+                                <select id="formTempo" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                                    <option value="30">Até 30 minutos</option>
+                                    <option value="60">De 30 min a 1 hora</option>
+                                    <option value="120" selected>De 1h a 2 horas</option>
+                                    <option value="180">Mais de 2 horas</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="flex items-center justify-end gap-4 pt-2">
+                        <span id="formFeedback" class="text-xs text-emerald-400 font-medium hidden">
+                            <i class="fa-solid fa-circle-check"></i> Resposta registrada! Gráficos atualizados.
+                        </span>
+                        <button type="submit" class="bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-500 hover:opacity-95 text-white font-bold text-xs sm:text-sm px-6 py-3 rounded-xl transition-all shadow-lg shadow-purple-600/20 flex items-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Enviar Resposta no Dashboard</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Section 5: Python Code Snippet Viewer (Colab Integration) -->
+        <section id="python-code" class="space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-brands fa-python text-amber-400"></i> Código Python no Google Colab
+                    </h2>
+                    <p class="text-xs text-slate-400">Script de Limpeza, Saneamento (Data Cleaning) e Análise Exploratória (EDA)</p>
+                </div>
+                <button onclick="copyPythonCode()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs px-4 py-2 rounded-xl transition-all flex items-center gap-2 self-start sm:self-auto">
+                    <i class="fa-regular fa-copy" id="copyBtnIcon"></i>
+                    <span id="copyBtnText">Copiar Código Python</span>
+                </button>
+            </div>
+
+            <div class="bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+                <div class="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                        <span class="text-xs text-slate-400 font-mono ml-2">raio_x_juventude_eda.py</span>
+                    </div>
+                    <span class="text-[10px] font-mono text-purple-400 bg-purple-950/60 px-2 py-0.5 rounded border border-purple-800">
+                        Google Colab
+                    </span>
+                </div>
+                <pre class="p-4 sm:p-6 overflow-x-auto text-xs text-slate-300 leading-relaxed"><code id="pythonCodeBlock"># ==============================================================================
+# PROJETO: Raio-X da Juventude — Processamento & Análise Exploratória
+# Autores: Equipe do Projeto Social e Educacional
+# Ambiente: Google Colab (Python 3.10+)
+# ==============================================================================
+
+import pandas as pd
+import numpy as np
+import plotly.express as px
+import plotly.graph_objects as bg
+
+# 1. CARREGAMENTO E SANEAMENTO DOS DADOS (DATA CLEANING)
+def carregar_e_limpar_dados(filepath):
+    # Carregar base primária de dados do questionário
+    df = pd.read_csv(filepath)
+    
+    # Tratamento de valores nulos
+    df['renda_familiar'].fillna('Não informado', inplace=True)
+    df['horas_estudo'].fillna(df['horas_estudo'].median(), inplace=True)
+    
+    # Remoção de inconsistências e duplicatas
+    df.drop_duplicates(subset=['id_estudante'], keep='first', inplace=True)
+    
+    # Engenharia de Recursos (Feature Engineering): Índice de Vulnerabilidade Digital
+    condicoes = [
+        (df['internet'] == 'Wi-Fi') & (df['tem_computador'] == True),
+        (df['internet'] == 'Wi-Fi') & (df['tem_computador'] == False),
+        (df['internet'] == 'Dados Móveis')
+    ]
+    escolhas = ['Baixa Vulnerabilidade', 'Média Vulnerabilidade', 'Alta Vulnerabilidade']
+    df['nivel_vulnerabilidade_digital'] = np.select(condicoes, escolhas, default='Extrema Vulnerabilidade')
+    
+    return df
+
+# 2. ANÁLISE EXPLORATÓRIA (EDA) E CRUZAMENTOS
+def gerar_relatorio_estatistico(df):
+    print("=== RESUMO ESTATÍSTICO DA AMOSTRA JUVE ===")
+    print(f"Total de Jovens Analisados: {len(df)}")
+    print("\nDistribuição de Vulnerabilidade Digital:")
+    print(df['nivel_vulnerabilidade_digital'].value_counts(normalize=True) * 100)
+    
+    # Agrupamento: Média de Horas de Estudo por Faixa de Renda
+    groupby_renda = df.groupby('renda_familiar')['horas_estudo'].agg(['mean', 'median', 'std']).reset_index()
+    return groupby_renda
+
+# 3. GERAÇÃO DE GRÁFICOS INTERATIVOS (PLOTLY)
+def exportar_visualizacoes_html(df):
+    # Gráfico de Barras: Estudo x Renda
+    fig_estudo = px.bar(
+        df, 
+        x='renda_familiar', 
+        y='horas_estudo',
+        color='nivel_vulnerabilidade_digital',
+        title='Horas Dedicadas ao Estudo por Renda Familiar e Acesso Tech',
+        labels={'horas_estudo': 'Horas de Estudo / Semana', 'renda_familiar': 'Faixa de Renda'},
+        template='plotly_dark'
+    )
+    
+    # Exportação para incorporação direta no GitHub Pages
+    fig_estudo.write_html("grafico_estudo_renda.html")
+    print("Gráfico exportado com sucesso para HTML interativo!")
+
+# Execução no Colab:
+# df_juventude = carregar_e_limpar_dados('respostas_juventude.csv')
+# gerar_relatorio_estatistico(df_juventude)
+# exportar_visualizacoes_html(df_juventude)</code></pre>
+            </div>
+        </section>
+
+        <!-- Section 6: Strategic Pillars & Impact Proposals -->
+        <section id="proposals" class="space-y-6">
+            <div>
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-emerald-400"></i> Pilares Estratégicos de Intervenção
+                </h2>
+                <p class="text-xs text-slate-400">Propostas práticas orientadas por dados para mitigar os gargalos identificados na pesquisa</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                <!-- Pilar 1 -->
+                <div class="glass-card p-6 rounded-2xl border-t-4 border-t-blue-500 flex flex-col justify-between hover:shadow-xl hover:shadow-blue-500/10 transition-all">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-laptop-code"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">1. Inclusão Digital & Polos de Estudo</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-4">
+                            Criação de Polos Comunitários Conectados em bairros vulneráveis com Wi-Fi corporativo de alta velocidade e empréstimo de computadores para estudos.
+                        </p>
+                        <ul class="text-xs text-slate-300 space-y-2 border-t border-slate-800 pt-3">
+                            <li class="flex items-center gap-2">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                Parcerias com provedores locais de banda larga.
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                Espaços climatizados e seguros para estudo fora da escola.
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-6 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-blue-400">
+                        <span>Meta de Impacto</span>
+                        <span class="font-bold bg-blue-500/10 px-2 py-0.5 rounded">Atender 5.000 jovens/ano</span>
+                    </div>
+                </div>
+
+                <!-- Pilar 2 -->
+                <div class="glass-card p-6 rounded-2xl border-t-4 border-t-purple-500 flex flex-col justify-between hover:shadow-xl hover:shadow-purple-500/10 transition-all">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-hands-holding-child"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">2. Apoio Socioemocional & Mentoria</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-4">
+                            Acompanhamento psicológico periódico nas escolas e programas de mentoria entre universitários e alunos da rede pública de ensino.
+                        </p>
+                        <ul class="text-xs text-slate-300 space-y-2 border-t border-slate-800 pt-3">
+                            <li class="flex items-center gap-2">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                Rodas de conversa semanais sobre saúde mental.
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                Orientação vocacional e preparação para o ENEM.
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-6 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-purple-400">
+                        <span>Meta de Impacto</span>
+                        <span class="font-bold bg-purple-500/10 px-2 py-0.5 rounded">Reduzir evasão em 35%</span>
+                    </div>
+                </div>
+
+                <!-- Pilar 3 -->
+                <div class="glass-card p-6 rounded-2xl border-t-4 border-t-emerald-500 flex flex-col justify-between hover:shadow-xl hover:shadow-emerald-500/10 transition-all">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">3. Capacitação Tech para o Futuro</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-4">
+                            Módulos práticos de lógica de programação, análise de dados e habilidades digitais integrados ao novo currículo do Ensino Médio.
+                        </p>
+                        <ul class="text-xs text-slate-300 space-y-2 border-t border-slate-800 pt-3">
+                            <li class="flex items-center gap-2">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                Cursos práticos em Python e Ferramentas Digitais.
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                Conexão com vagas de jovem aprendiz em tecnologia.
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-6 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-emerald-400">
+                        <span>Meta de Impacto</span>
+                        <span class="font-bold bg-emerald-500/10 px-2 py-0.5 rounded">80% Inserção Profissional</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-800/80 mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                    <i class="fa-solid fa-chart-radar"></i>
+                </div>
+                <span class="text-xs text-slate-400">
+                    Projeto <strong class="text-slate-200">Raio-X da Juventude</strong> — Pesquisa & Impacto Social © 2026
+                </span>
+            </div>
+            <div class="text-xs text-slate-500">
+                Desenvolvido para publicação via <a href="https://pages.github.com/" target="_blank" class="text-slate-400 hover:text-white underline">GitHub Pages</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Logic Script Section -->
+    <script>
+        // Sample State Data
+        let dataset = {
+            total: 1250,
+            internet: { wifi: 770, mobile: 350, none: 130 },
+            studyIncome: {
+                labels: ['Até 1 Salário Mínimo', '1 a 3 Salários Mínimos', 'Mais de 3 Salários Mínimos'],
+                data: [2.8, 4.5, 7.1]
+            },
+            wellbeing: {
+                labels: ['Saúde Mental', 'Perspectiva Futuro', 'Mobilidade Urb.', 'Infraes. Escola', 'Acesso à Lazer'],
+                scores: [2.3, 3.8, 2.1, 2.9, 2.6]
+            }
+        };
+
+        let chartInternet, chartStudy, chartWellbeing;
+
+        // Initialize Dashboard on Load
+        window.onload = function() {
+            initCharts();
+            updateKPIs();
+        };
+
+        function initCharts() {
+            // Chart 1: Internet Access (Doughnut)
+            const ctxInternet = document.getElementById('internetChart').getContext('2d');
+            chartInternet = new Chart(ctxInternet, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Wi-Fi Banda Larga', 'Apenas Dados Móveis', 'Sem Acesso / Precário'],
+                    datasets: [{
+                        data: [dataset.internet.wifi, dataset.internet.mobile, dataset.internet.none],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#ef4444'],
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#94a3b8', font: { size: 11 } }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            // Chart 2: Study Hours vs Income (Bar Chart)
+            const ctxStudy = document.getElementById('studyIncomeChart').getContext('2d');
+            chartStudy = new Chart(ctxStudy, {
+                type: 'bar',
+                data: {
+                    labels: dataset.studyIncome.labels,
+                    datasets: [{
+                        label: 'Horas de Estudo Extraclasse / Semana',
+                        data: dataset.studyIncome.data,
+                        backgroundColor: ['#60a5fa', '#a78bfa', '#34d399'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#94a3b8', font: { size: 10 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8', font: { size: 10 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Chart 3: Quality of Life Multidimensional (Horizontal Bar Chart)
+            const ctxWellbeing = document.getElementById('wellbeingChart').getContext('2d');
+            chartWellbeing = new Chart(ctxWellbeing, {
+                type: 'bar',
+                data: {
+                    labels: dataset.wellbeing.labels,
+                    datasets: [{
+                        label: 'Nota Média (1.0 a 5.0)',
+                        data: dataset.wellbeing.scores,
+                        backgroundColor: '#8b5cf6',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            min: 0,
+                            max: 5,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#94a3b8', font: { size: 10 } }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8', font: { size: 11 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Update KPIs based on Current State
+        function updateKPIs() {
+            document.getElementById('kpi-total').innerText = dataset.total.toLocaleString('pt-BR');
+            
+            const totalNet = dataset.internet.wifi + dataset.internet.mobile + dataset.internet.none;
+            const vulnerablePct = (((dataset.internet.mobile + dataset.internet.none) / totalNet) * 100).toFixed(1);
+            document.getElementById('kpi-internet').innerText = vulnerablePct + '%';
+
+            const avgStudy = ((dataset.studyIncome.data[0] + dataset.studyIncome.data[1] + dataset.studyIncome.data[2]) / 3).toFixed(1);
+            document.getElementById('kpi-study').innerText = avgStudy + 'h/sem';
+
+            const avgWellbeing = (dataset.wellbeing.scores.reduce((a, b) => a + b, 0) / dataset.wellbeing.scores.length).toFixed(1);
+            document.getElementById('kpi-wellbeing').innerText = avgWellbeing + '/5.0';
+        }
+
+        // Handle Interactive Form Submission
+        function handleSurveySubmit(event) {
+            event.preventDefault();
+
+            // Read Form Values
+            const renda = document.getElementById('formRenda').value;
+            const internet = document.getElementById('formInternet').value;
+            const horas = parseFloat(document.getElementById('formHoras').value) || 0;
+            const mental = parseInt(document.getElementById('formMental').value) || 3;
+
+            // Increment Total Counter
+            dataset.total += 1;
+
+            // Update Internet distribution
+            if (internet === 'wifi') dataset.internet.wifi += 1;
+            else if (internet === 'mobile') dataset.internet.mobile += 1;
+            else dataset.internet.none += 1;
+
+            // Update Study Hours
+            if (renda === 'ate1') {
+                dataset.studyIncome.data[0] = parseFloat(((dataset.studyIncome.data[0] * 5 + horas) / 6).toFixed(1));
+            } else if (renda === '1a3') {
+                dataset.studyIncome.data[1] = parseFloat(((dataset.studyIncome.data[1] * 5 + horas) / 6).toFixed(1));
+            } else {
+                dataset.studyIncome.data[2] = parseFloat(((dataset.studyIncome.data[2] * 5 + horas) / 6).toFixed(1));
+            }
+
+            // Update Mental Score
+            dataset.wellbeing.scores[0] = parseFloat(((dataset.wellbeing.scores[0] * 5 + mental) / 6).toFixed(1));
+
+            // Refresh Charts
+            chartInternet.data.datasets[0].data = [dataset.internet.wifi, dataset.internet.mobile, dataset.internet.none];
+            chartInternet.update();
+
+            chartStudy.data.datasets[0].data = dataset.studyIncome.data;
+            chartStudy.update();
+
+            chartWellbeing.data.datasets[0].data = dataset.wellbeing.scores;
+            chartWellbeing.update();
+
+            // Refresh KPI cards
+            updateKPIs();
+
+            // Show Feedback
+            const feedback = document.getElementById('formFeedback');
+            feedback.classList.remove('hidden');
+            setTimeout(() => {
+                feedback.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Reset Data to Default
+        function resetData() {
+            dataset = {
+                total: 1250,
+                internet: { wifi: 770, mobile: 350, none: 130 },
+                studyIncome: {
+                    labels: ['Até 1 Salário Mínimo', '1 a 3 Salários Mínimos', 'Mais de 3 Salários Mínimos'],
+                    data: [2.8, 4.5, 7.1]
+                },
+                wellbeing: {
+                    labels: ['Saúde Mental', 'Perspectiva Futuro', 'Mobilidade Urb.', 'Infraes. Escola', 'Acesso à Lazer'],
+                    scores: [2.3, 3.8, 2.1, 2.9, 2.6]
+                }
+            };
+            chartInternet.data.datasets[0].data = [770, 350, 130];
+            chartInternet.update();
+
+            chartStudy.data.datasets[0].data = [2.8, 4.5, 7.1];
+            chartStudy.update();
+
+            chartWellbeing.data.datasets[0].data = [2.3, 3.8, 2.1, 2.9, 2.6];
+            chartWellbeing.update();
+
+            updateKPIs();
+        }
+
+        // Copy Python Code
+        function copyPythonCode() {
+            const codeText = document.getElementById('pythonCodeBlock').innerText;
+            
+            // Fallback execCommand strategy
+            const textarea = document.createElement('textarea');
+            textarea.value = codeText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                const copyBtnText = document.getElementById('copyBtnText');
+                const copyBtnIcon = document.getElementById('copyBtnIcon');
+
+                copyBtnText.innerText = 'Copiado!';
+                copyBtnIcon.className = 'fa-solid fa-check text-emerald-400';
+
+                setTimeout(() => {
+                    copyBtnText.innerText = 'Copiar Código Python';
+                    copyBtnIcon.className = 'fa-regular fa-copy';
+                }, 2500);
+            } catch (err) {
+                console.error('Falha ao copiar:', err);
+            }
+            document.body.removeChild(textarea);
+        }
+    </script>
+</body>
+</html>
